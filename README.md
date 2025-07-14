@@ -20,6 +20,7 @@ For comprehensive instructions on installing and operating PreSure, please consu
 
 - **[Installation Guide](./docs/installation.md)**
 - **[User Manual](./docs/usage.md)**
+- **[Understanding Mock Mode](./docs/mock.md)**
 
 ## Contributing & Support
 
