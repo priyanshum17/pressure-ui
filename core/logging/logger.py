@@ -115,7 +115,8 @@ class VernierFSRLogger:
         finally:
             self.stop_logging()
             self._stop_reader.set()
-            self.ser.close()
+            if not self.use_mock:
+                self.ser.close()
             logging.info("Logging finished.")
 
         save_dir = Path(save_dir or ".")

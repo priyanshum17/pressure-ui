@@ -3,6 +3,10 @@
 
 **PreSure** is a robust and user-friendly application designed to facilitate the collection and analysis of pressure sensor data for scientific and research applications. By providing an intuitive interface for trial management and data logging, PreSure empowers researchers to focus on their experiments without the need for extensive technical expertise.
 
+| Setup Page |
+| :---: |
+| ![Setup Page](./docs/assets/setup.png) |
+
 ## Key Features
 
 - **Intuitive Web-Based Interface:** Simplifies the process of setting up and executing experimental trials.

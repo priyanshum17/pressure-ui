@@ -5,9 +5,9 @@ from core.config.setting import settings
 from core.utils.generator import filename_generator
 from core.logging.logger import VernierFSRLogger
 
-
 def run_trials(config):
-    st.title("Run Trials")
+    st.title("🔬 Run Trials")
+    st.markdown("Here is the list of all generated trials. Run them one by one.")
 
     filenames = filename_generator(
         config["num_trials"],
@@ -15,59 +15,63 @@ def run_trials(config):
         config["lump_options"]
     )
 
-    # Get current trial index from URL query param
-    trial_index = int(st.query_params().get("trial", [0])[0])
+    st.info(f"**Total Trials Generated:** {len(filenames)}")
 
-    if trial_index >= len(filenames):
-        st.success("All trials completed.")
-        return
-
-    trial_name = filenames[trial_index]
-    base_dir = Path(settings.DATA_DIRECTORY) / config["directory"]
-    trial_dir = base_dir / trial_name
-    trial_dir.mkdir(parents=True, exist_ok=True)
-
-    st.subheader(f"Trial {trial_index + 1} of {len(filenames)}: {trial_name}")
-
-    if st.button("Start This Trial", use_container_width=True):
-        try:
-            logger = VernierFSRLogger()
-        except Exception as e:
-            st.error(f"Logger initialization failed: {e}")
-            _show_next_button(trial_index + 1)
-            return
-
-        progress = st.progress(0, text="Running logger...")
-        start_time = time.time()
-
-        try:
-            logger.run(
-                duration_seconds=config["duration"],
-                start_delay=config["delay"],
-                save_dir=trial_dir,
-                file_stem=trial_name
-            )
-
-            for t in range(config["duration"]):
-                elapsed = time.time() - start_time
-                progress.progress(
-                    min(elapsed / config["duration"], 1.0),
-                    text=f"Time left: {config['duration'] - int(elapsed)}s"
+    # Create a container for each trial to keep the layout clean
+    for i, trial_name in enumerate(filenames):
+        with st.container():
+            st.subheader(f"Trial {i + 1}: {trial_name}")
+            
+            # Use columns for a more organized layout
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.markdown(
+                    f"**Directory:** `{config['directory']}/{trial_name}`<br>"
+                    f"**Duration:** `{config['duration']}s`  **Delay:** `{config['delay']}s`",
+                    unsafe_allow_html=True
                 )
-                time.sleep(1)
+            
+            with col2:
+                # Use a unique key for each button to avoid conflicts
+                if st.button(f"Run Trial", key=f"run_{trial_name}", use_container_width=True):
+                    base_dir = Path(settings.DATA_DIRECTORY) / config["directory"]
+                    trial_dir = base_dir / trial_name
+                    trial_dir.mkdir(parents=True, exist_ok=True)
 
-            progress.empty()
-            st.success(f"Trial {trial_name} completed.")
+                    try:
+                        # Set use_mock=True for testing without a physical Arduino
+                        logger = VernierFSRLogger(use_mock=True) 
+                    except Exception as e:
+                        st.error(f"Logger initialization failed for {trial_name}: {e}")
+                        continue
 
-        except Exception as e:
-            progress.empty()
-            st.error(f"Trial failed with error: {e}")
+                    # Use an empty placeholder for the progress bar
+                    progress_placeholder = st.empty()
+                    start_time = time.time()
 
-        _show_next_button(trial_index + 1)
+                    try:
+                        logger.run(
+                            duration_seconds=config["duration"],
+                            start_delay=config["delay"],
+                            save_dir=trial_dir,
+                            file_stem=trial_name
+                        )
 
+                        # Update the progress bar in the placeholder
+                        for t in range(config["duration"]):
+                            elapsed = time.time() - start_time
+                            progress_value = min(elapsed / config["duration"], 1.0)
+                            progress_placeholder.progress(
+                                progress_value,
+                                text=f"⏳ Running {trial_name}... {int(elapsed)}/ {config['duration']}s"
+                            )
+                            time.sleep(1)
+                        
+                        progress_placeholder.empty()
+                        st.success(f"✅ Trial {trial_name} completed successfully.")
 
-def _show_next_button(next_index: int):
-    st.markdown("---")
-    if st.button("Next Trial", use_container_width=True):
-        st.query_params(trial=str(next_index))
-        st.rerun()
+                    except Exception as e:
+                        progress_placeholder.empty()
+                        st.error(f"❌ Trial {trial_name} failed: {e}")
+
+            st.markdown("<hr>", unsafe_allow_html=True)

@@ -3,6 +3,12 @@
 
 Welcome to the PreSure User Manual. This guide will explain how to use the application to run trials and collect data.
 
+## Screenshots                                                                                                                                                         │
+| Setup Page | Trials Page | Analysis Page |
+|:----------:|:-----------:|:-------------:|
+| ![Setup Page](/docs/assets/setup.png) | ![Trials Page](/docs/assets/trials.png) | ![Analysis Page](/docs/assets/analysis.png) |
+
+
 ## Starting the Application
 
 To start the application, open your terminal (or Command Prompt), navigate to the `pressure-ui` directory, and run the following command:
