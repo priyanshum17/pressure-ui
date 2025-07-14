@@ -40,7 +40,7 @@ def run_trials(config):
 
                     try:
                         # Set use_mock=True for testing without a physical Arduino
-                        logger = VernierFSRLogger(use_mock=False) 
+                        logger = VernierFSRLogger(use_mock=True) 
                     except Exception as e:
                         st.error(f"Logger initialization failed for {trial_name}: {e}")
                         continue
