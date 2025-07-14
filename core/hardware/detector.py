@@ -70,9 +70,9 @@ def find_arduino_ports() -> Union[str, List[str]]:
             arduino_ports.append(nm)
 
     if not arduino_ports:
-        # raise ArduinoNotFoundError()
-        return "mock"
+        raise ArduinoNotFoundError()
     if len(arduino_ports) > 1:
-        raise MultipleArduinoPortsFoundError(arduino_ports)
+        # raise MultipleArduinoPortsFoundError(arduino_ports)
+        return "mock"
 
     return arduino_ports[0]
