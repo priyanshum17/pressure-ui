@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pressure-ui"
+version = "0.1.0"
+description = "A Streamlit application for visualizing pressure sensor data."
+authors = [
+    {name = "Priyanshu Mehta", email = "pmehta305@gatech.edu"},
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+
+[tool.ruff]
+line-length = 88
