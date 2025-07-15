@@ -8,7 +8,10 @@ import re
 import logging
 
 # Setup basic logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 
 def display_charts(data_directory: Path):
     st.title("Analysis")
@@ -21,7 +24,7 @@ def display_charts(data_directory: Path):
         st.warning(f"No CLEAN_*.csv files found in {data_directory.resolve()}.")
         logging.warning(f"No files found in {data_directory.resolve()}.")
         return
-    
+
     st.subheader("DataSet")
     with st.expander("Detected clean files", expanded=False):
         st.subheader("Detected Clean Files")
@@ -29,7 +32,7 @@ def display_charts(data_directory: Path):
             st.write(f"- `{f.relative_to(data_directory)}` (Exists: {f.exists()})")
 
     all_dfs = []
-    pattern = r"^CLEAN_TRIAL_(\d+)_LOC_(\d+)_(LUMP|NOLUMP)\.csv$"   # <-- single backslash, anchored
+    pattern = r"^CLEAN_TRIAL_(\d+)_LOC_(\d+)_(LUMP|NOLUMP)\.csv$"  # <-- single backslash, anchored
     logging.info(f"Using regex pattern: {pattern}")
 
     for file_path in csv_files:
@@ -44,22 +47,24 @@ def display_charts(data_directory: Path):
             st.error(f"Regex mismatch for: `{relative_path}`")
             logging.error(f"Regex did not match for filename: {file_path.name}")
             continue
-        
+
         logging.info(f"Regex matched for {file_path.name}! Groups: {match.groups()}")
-        
+
         try:
             df = pd.read_csv(file_path)
-            if 'Time(s)' not in df.columns or 'D' not in df.columns:
-                st.warning(f"Required columns ('Time(s)', 'D') not found in `{relative_path}`.")
+            if "Time(s)" not in df.columns or "D" not in df.columns:
+                st.warning(
+                    f"Required columns ('Time(s)', 'D') not found in `{relative_path}`."
+                )
                 continue
-            
-            processed_df = df[['Time(s)', 'D']].copy()
-            processed_df['source_file'] = str(relative_path)
-            
+
+            processed_df = df[["Time(s)", "D"]].copy()
+            processed_df["source_file"] = str(relative_path)
+
             trial_num, loc, condition = match.groups()
-            processed_df['trial_no'] = int(trial_num)
-            processed_df['location_no'] = int(loc)
-            processed_df['condition'] = condition
+            processed_df["trial_no"] = int(trial_num)
+            processed_df["location_no"] = int(loc)
+            processed_df["condition"] = condition
 
             all_dfs.append(processed_df)
         except Exception as e:
@@ -70,8 +75,14 @@ def display_charts(data_directory: Path):
         st.subheader("DataSet")
         if all_dfs:
             concatenated_df = pd.concat(all_dfs, ignore_index=True)
-            cols = ['source_file', 'trial_no', 'location_no',
-                    'condition', 'Time(s)', 'D']
+            cols = [
+                "source_file",
+                "trial_no",
+                "location_no",
+                "condition",
+                "Time(s)",
+                "D",
+            ]
             st.dataframe(concatenated_df[cols])
         else:
             st.write("No data to display in DataFrame.")
@@ -95,7 +106,7 @@ def display_charts(data_directory: Path):
                 continue
             values = df["D"].astype(float)
             data.setdefault(key, []).append(values)
-        except Exception as e:
+        except Exception:
             # Errors are already logged above, so we can be brief here
             st.warning(f"Skipping {relative_path} for analysis due to read error.")
 
@@ -112,7 +123,7 @@ def display_charts(data_directory: Path):
         summary[condition][quadrant] = {
             "avg": round(combined.mean(axis=1).mean(), 1),
             "median": round(combined.median(axis=1).median(), 1),
-            "std": round(combined.stack().std(), 1)
+            "std": round(combined.stack().std(), 1),
         }
 
     # === STEP 4: Summary Table ===
@@ -128,7 +139,9 @@ def display_charts(data_directory: Path):
 
     # === STEP 5: Variability Metrics ===
     def compute_metrics(summary_dict):
-        quad_avgs = [summary_dict.get(q, {}).get("avg", np.nan) for q in ["Q1", "Q2", "Q3", "Q4"]]
+        quad_avgs = [
+            summary_dict.get(q, {}).get("avg", np.nan) for q in ["Q1", "Q2", "Q3", "Q4"]
+        ]
         quad_arr = np.array(quad_avgs)
         quad_arr_clean = quad_arr[~np.isnan(quad_arr)]
         if len(quad_arr_clean) >= 2:
@@ -145,37 +158,55 @@ def display_charts(data_directory: Path):
     variability_rows = []
     for cond in ["LUMP", "NOLUMP"]:
         r, s, c = compute_metrics(summary.get(cond, {}))
-        variability_rows.append({
-            "Condition": cond,
-            "Range (Max - Min)": f"{r:.1f}",
-            "Standard Deviation": f"{s:.1f}",
-            "Coefficient of Variation (CV)": f"{c:.2f} %"
-        })
+        variability_rows.append(
+            {
+                "Condition": cond,
+                "Range (Max - Min)": f"{r:.1f}",
+                "Standard Deviation": f"{s:.1f}",
+                "Coefficient of Variation (CV)": f"{c:.2f} %",
+            }
+        )
 
     # Display as table
     st.table(pd.DataFrame(variability_rows))
 
-
     # === STEP 6: Heatmaps ===
     def grid(data_dict):
-        return np.array([
-            [data_dict.get("Q2", np.nan), data_dict.get("Q1", np.nan)],
-            [data_dict.get("Q3", np.nan), data_dict.get("Q4", np.nan)],
-        ])
+        return np.array(
+            [
+                [data_dict.get("Q2", np.nan), data_dict.get("Q1", np.nan)],
+                [data_dict.get("Q3", np.nan), data_dict.get("Q4", np.nan)],
+            ]
+        )
 
     vmin = 0
     vmax = 60000
     fig, axs = plt.subplots(1, 2, figsize=(14, 6))
 
     for i, cond in enumerate(["LUMP", "NOLUMP"]):
-        avg_dict = {q: summary[cond].get(q, {}).get("avg", np.nan) for q in ["Q1", "Q2", "Q3", "Q4"]}
+        avg_dict = {
+            q: summary[cond].get(q, {}).get("avg", np.nan)
+            for q in ["Q1", "Q2", "Q3", "Q4"]
+        }
         data_grid = grid(avg_dict)
-        labels = np.array([
-            [f"Q2\n{data_grid[0,0]:.1f}", f"Q1\n{data_grid[0,1]:.1f}"],
-            [f"Q3\n{data_grid[1,0]:.1f}", f"Q4\n{data_grid[1,1]:.1f}"]
-        ])
-        sns.heatmap(data_grid, annot=labels, fmt="", cmap="YlOrRd", vmin=vmin, vmax=vmax,
-                    xticklabels=False, yticklabels=False, cbar=True, ax=axs[i])
+        labels = np.array(
+            [
+                [f"Q2\n{data_grid[0,0]:.1f}", f"Q1\n{data_grid[0,1]:.1f}"],
+                [f"Q3\n{data_grid[1,0]:.1f}", f"Q4\n{data_grid[1,1]:.1f}"],
+            ]
+        )
+        sns.heatmap(
+            data_grid,
+            annot=labels,
+            fmt="",
+            cmap="YlOrRd",
+            vmin=vmin,
+            vmax=vmax,
+            xticklabels=False,
+            yticklabels=False,
+            cbar=True,
+            ax=axs[i],
+        )
         axs[i].set_title(f"{cond} - Sensor D")
 
     st.pyplot(fig)

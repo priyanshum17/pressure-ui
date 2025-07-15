@@ -1,9 +1,8 @@
 from typing import List
 
+
 def filename_generator(
-    trials: int = 1,
-    locations: int = 1,
-    lump_status: List[str] = list()
+    trials: int = 1, locations: int = 1, lump_status: List[str] = list()
 ) -> List[str]:
     """
     Generate filenames based on trial count, location count, and lump status.
@@ -22,7 +21,9 @@ def filename_generator(
     valid_statuses = {"LUMP", "NOLUMP"}
     invalid = [s for s in lump_status if s not in valid_statuses]
     if invalid:
-        raise ValueError(f"Invalid lump status values: {invalid}. Allowed: {valid_statuses}")
+        raise ValueError(
+            f"Invalid lump status values: {invalid}. Allowed: {valid_statuses}"
+        )
 
     filenames = []
     for trial in range(1, trials + 1):

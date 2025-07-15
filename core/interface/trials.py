@@ -5,14 +5,13 @@ from core.config.setting import settings
 from core.utils.generator import filename_generator
 from core.logging.logger import VernierFSRLogger
 
+
 def run_trials(config):
     st.title("🔬 Run Trials")
     st.markdown("Here is the list of all generated trials. Run them one by one.")
 
     filenames = filename_generator(
-        config["num_trials"],
-        config["num_locations"],
-        config["lump_options"]
+        config["num_trials"], config["num_locations"], config["lump_options"]
     )
 
     st.info(f"**Total Trials Generated:** {len(filenames)}")
@@ -21,26 +20,28 @@ def run_trials(config):
     for i, trial_name in enumerate(filenames):
         with st.container():
             st.subheader(f"Trial {i + 1}: {trial_name}")
-            
+
             # Use columns for a more organized layout
             col1, col2 = st.columns([3, 1])
             with col1:
                 st.markdown(
                     f"**Directory:** `{config['directory']}/{trial_name}`<br>"
                     f"**Duration:** `{config['duration']}s`  **Delay:** `{config['delay']}s`",
-                    unsafe_allow_html=True
+                    unsafe_allow_html=True,
                 )
-            
+
             with col2:
                 # Use a unique key for each button to avoid conflicts
-                if st.button(f"Run Trial", key=f"run_{trial_name}", use_container_width=True):
+                if st.button(
+                    "Run Trial", key=f"run_{trial_name}", use_container_width=True
+                ):
                     base_dir = Path(settings.DATA_DIRECTORY) / config["directory"]
                     trial_dir = base_dir / trial_name
                     trial_dir.mkdir(parents=True, exist_ok=True)
 
                     try:
                         # Set use_mock=True for testing without a physical Arduino
-                        logger = VernierFSRLogger(use_mock=True) 
+                        logger = VernierFSRLogger(use_mock=True)
                     except Exception as e:
                         st.error(f"Logger initialization failed for {trial_name}: {e}")
                         continue
@@ -54,7 +55,7 @@ def run_trials(config):
                             duration_seconds=config["duration"],
                             start_delay=config["delay"],
                             save_dir=trial_dir,
-                            file_stem=trial_name
+                            file_stem=trial_name,
                         )
 
                         # Update the progress bar in the placeholder
@@ -63,10 +64,10 @@ def run_trials(config):
                             progress_value = min(elapsed / config["duration"], 1.0)
                             progress_placeholder.progress(
                                 progress_value,
-                                text=f"⏳ Running {trial_name}... {int(elapsed)}/ {config['duration']}s"
+                                text=f"⏳ Running {trial_name}... {int(elapsed)}/ {config['duration']}s",
                             )
                             time.sleep(1)
-                        
+
                         progress_placeholder.empty()
                         st.success(f"✅ Trial {trial_name} completed successfully.")
 

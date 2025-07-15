@@ -16,6 +16,7 @@ from core.utils.mock_data import generate_mock_data
 
 POLL_INTERVAL = 0.01
 
+
 class VernierFSRLogger:
     def __init__(self, baud: int = 9600, timeout: float = 1.0, use_mock: bool = False):
         self.use_mock = use_mock
@@ -48,28 +49,28 @@ class VernierFSRLogger:
 
     def start_logging(self) -> None:
         if not self.is_logging and not self.use_mock:
-            self.ser.write(b's')
+            self.ser.write(b"s")
         self.is_logging = True
 
     def stop_logging(self) -> None:
         if self.is_logging and not self.use_mock:
-            self.ser.write(b'e')
+            self.ser.write(b"e")
         self.is_logging = False
 
     def _reader_loop(self) -> None:
         while not self._stop_reader.is_set():
             if self.use_mock:
                 line = generate_mock_data()
-                timestamp = datetime.now().strftime('%H:%M:%S')
+                timestamp = datetime.now().strftime("%H:%M:%S")
                 entry = f"[{timestamp}] {line}"
                 print(entry)
                 self._data_lines.append(entry)
                 time.sleep(POLL_INTERVAL)
             else:
                 try:
-                    line = self.ser.readline().decode('utf-8', errors='ignore').strip()
+                    line = self.ser.readline().decode("utf-8", errors="ignore").strip()
                     if line:
-                        timestamp = datetime.now().strftime('%H:%M:%S')
+                        timestamp = datetime.now().strftime("%H:%M:%S")
                         entry = f"[{timestamp}] {line}"
                         print(entry)
                         self._data_lines.append(entry)
@@ -84,7 +85,7 @@ class VernierFSRLogger:
         duration_seconds: float,
         start_delay: float = 0,
         save_dir: Path | str | None = None,
-        file_stem: str | None = None
+        file_stem: str | None = None,
     ) -> tuple[Path | None, Path | None]:
         """
         Run the logger, save raw and clean CSV files after logging.
@@ -129,14 +130,13 @@ class VernierFSRLogger:
 
     def save_to_csv(self, save_dir: Path, filename: str) -> Path:
         filepath = save_dir / filename
-        with filepath.open("w", newline='') as f:
+        with filepath.open("w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["timestamped_line"])
             for line in self._data_lines:
                 writer.writerow([line])
         logging.info(f"Saved raw log to {filepath.resolve()}")
         return filepath
-
 
     def save_clean_csv(self, save_dir: Path, filename: str) -> Path | None:
         """
@@ -160,7 +160,7 @@ class VernierFSRLogger:
             return None
 
         filepath = save_dir / filename
-        with filepath.open("w", newline='') as f:
+        with filepath.open("w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["Time(s)", "A", "B", "C", "D"])
             writer.writerows(extracted)

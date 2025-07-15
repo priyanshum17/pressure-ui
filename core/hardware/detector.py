@@ -1,6 +1,6 @@
 import sys
 import serial.tools.list_ports
-from typing import Optional, Union, List
+from typing import Union, List
 
 
 class ArduinoNotFoundError(Exception):

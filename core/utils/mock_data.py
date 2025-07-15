@@ -1,13 +1,13 @@
-
 import random
 import time
 from datetime import datetime
+
 
 def generate_mock_data():
     """
     Generate a mock data line simulating sensor readings.
     """
-    timestamp = datetime.now().strftime('%H:%M:%S')
+    timestamp = datetime.now().strftime("%H:%M:%S")
     time_sec = round(time.time() % 60, 3)
     val1 = random.randint(28000, 32000)
     val2 = random.randint(28000, 32000)

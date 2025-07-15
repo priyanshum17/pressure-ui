@@ -20,7 +20,11 @@ def debug_serial_ports():
         print(f"Serial Number  : {port.serial_number or 'N/A'}")
         print(f"Location       : {port.location or 'N/A'}")
         print(f"HWID           : {port.hwid}")
-        print(f"VID:PID        : {port.vid}:{port.pid}" if port.vid and port.pid else "VID:PID        : N/A")
+        print(
+            f"VID:PID        : {port.vid}:{port.pid}"
+            if port.vid and port.pid
+            else "VID:PID        : N/A"
+        )
         print("-" * 70)
 
     arduino_ports = find_arduino_ports()
